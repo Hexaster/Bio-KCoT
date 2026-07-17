@@ -1,4 +1,5 @@
 import argparse
+import threading
 import time
 from pathlib import Path
 
@@ -69,7 +70,15 @@ def load_model(args):
     )
     if args.adapter:
         model = PeftModel.from_pretrained(model, args.adapter)
+    if args.temperature <= 0:
+        model.generation_config.do_sample = False
+        model.generation_config.temperature = None
+        model.generation_config.top_p = None
+        model.generation_config.top_k = None
     model.eval()
+    print(f"Model device: {model.device}", flush=True)
+    if hasattr(model, "hf_device_map"):
+        print(f"Model device map: {model.hf_device_map}", flush=True)
     return tokenizer, model
 
 
@@ -95,19 +104,38 @@ def generate_batch(tokenizer, model, rows, args):
     generation_kwargs = {
         "max_new_tokens": args.max_new_tokens,
         "do_sample": args.temperature > 0,
-        "top_p": args.top_p,
-        "top_k": args.top_k,
         "repetition_penalty": args.repetition_penalty,
         "pad_token_id": tokenizer.pad_token_id,
         "eos_token_id": tokenizer.eos_token_id,
     }
     if args.temperature > 0:
         generation_kwargs["temperature"] = args.temperature
+        generation_kwargs["top_p"] = args.top_p
+        generation_kwargs["top_k"] = args.top_k
+
+    generation_started = time.time()
+    generation_finished = threading.Event()
+
+    def report_generation_progress():
+        while not generation_finished.wait(30):
+            elapsed = int(time.time() - generation_started)
+            print(f"Generation still running ({elapsed}s elapsed)...", flush=True)
+
+    reporter = threading.Thread(target=report_generation_progress, daemon=True)
+    reporter.start()
     with torch.inference_mode():
-        outputs = model.generate(
-            **inputs,
-            **generation_kwargs,
-        )
+        try:
+            outputs = model.generate(
+                **inputs,
+                **generation_kwargs,
+            )
+        finally:
+            generation_finished.set()
+            reporter.join()
+
+    elapsed = time.time() - generation_started
+    generated_lengths = [int((output_ids[input_width:] != tokenizer.pad_token_id).sum()) for output_ids in outputs]
+    print(f"Generation finished in {elapsed:.1f}s; generated tokens: {generated_lengths}", flush=True)
 
     return [
         tokenizer.decode(output_ids[input_width:], skip_special_tokens=True).strip()
