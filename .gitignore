@@ -38,16 +38,11 @@ picture/*.pdf
 picture/*.png
 
 # Regenerable/intermediate datasets
-dataset/PrimeKG/*.csv
-dataset/data/tmp/
-dataset/data/score/
-dataset/data/question_org/
-dataset/data/withKG/
-dataset/data/withoutKG/
-dataset/data/intermediate*.csv
-dataset/data/**/*_processing.jsonl
-dataset/data/LLM_Evaluation_Results*.csv
-dataset/data/OOD/**/*_results*.json
+dataset/PrimeKG/
+dataset/data/
+dataset/result/
+dataset/unsloth_compiled_cache/
+data/
 
 # Manuscript copy (documentation, not an experiment input)
 /_KDD_*.pdf
