@@ -1,0 +1,38 @@
+{
+  "api": {
+    "judge_base_url": "https://api.ai-gaochao.cn/v1",
+    "judge_model": "deepseek-r1",
+    "local_base_url": "http://127.0.0.1:8333/v1"
+  },
+  "neo4j": {
+    "uri": "bolt://localhost:7688",
+    "username": "neo4j"
+  },
+  "models": {
+    "qwen2_5_7b": "Qwen/Qwen2.5-7B-Instruct",
+    "qwen3_4b": "Qwen/Qwen3-4B",
+    "qwen3_8b": "Qwen/Qwen3-8B",
+    "qwen3_14b": "Qwen/Qwen3-14B",
+    "biomistral_7b": "BioMistral/BioMistral-7B"
+  },
+  "paths": {
+    "data_dir": "dataset/data",
+    "test_csv": "data/test.csv",
+    "test_data_dir": "dataset/data/test",
+    "train_data_dir": "dataset/data/train",
+    "rl_dataset": "dataset/data/RL/rl.jsonl",
+    "primekg_dir": "dataset/PrimeKG",
+    "sft_kg_adapter": "model/kg_clean2/qwen3-8b",
+    "sft_kg_merged": "model/kg_clean/qwen3-8b/merge",
+    "sft_nokg_adapter": "train_model/nokg/qwen3-8b",
+    "grpo_nokg_output": "model/GRPO/qwen3-8b",
+    "grpo_kg_output": "model/GRPO/qwen3-8b-kg",
+    "grpo_nokg_resume": "model/GRPO/qwen3-8b/checkpoint-50",
+    "grpo_kg_checkpoint": "model/GRPO/qwen3-8b-kg/checkpoint-100",
+    "dataset_results": "dataset/result",
+    "baseline_results": "result_org",
+    "evaluation_results": "evaluate/results",
+    "pictures": "picture",
+    "ood_biomaze": "dataset/data/OOD/BioMaze"
+  }
+}

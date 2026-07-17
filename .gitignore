@@ -1,0 +1,59 @@
+# Local secrets and machine-specific overrides
+.env
+.env.*
+!.env.example
+
+# Python/runtime caches
+__pycache__/
+*.py[cod]
+*.so
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+**/unsloth_compiled_cache/
+
+# Virtual environments and editor files
+.venv/
+venv/
+.idea/
+.vscode/
+*.swp
+
+# Model artifacts and training checkpoints (publish separately)
+model/
+train_model/
+code/grpo_trainer_lora_model/
+*.safetensors
+*.bin
+optimizer.pt
+scheduler.pt
+rng_state.pth
+checkpoint-*/
+
+# Generated predictions, evaluations, and figures
+result_org/
+dataset/result/
+evaluate/qwen3-8b/
+picture/*.pdf
+picture/*.png
+
+# Regenerable/intermediate datasets
+dataset/PrimeKG/*.csv
+dataset/data/tmp/
+dataset/data/score/
+dataset/data/question_org/
+dataset/data/withKG/
+dataset/data/withoutKG/
+dataset/data/intermediate*.csv
+dataset/data/**/*_processing.jsonl
+dataset/data/LLM_Evaluation_Results*.csv
+dataset/data/OOD/**/*_results*.json
+
+# Manuscript copy (documentation, not an experiment input)
+/_KDD_*.pdf
+
+# Local logs and temporary files
+*.log
+*.tmp
+*.bak
+.DS_Store

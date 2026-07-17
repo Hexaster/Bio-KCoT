@@ -1,0 +1,85 @@
+{
+    "node_type": {
+        "biological_process": 0,
+        "gene/protein": 1,
+        "disease": 2,
+        "effect/phenotype": 3,
+        "anatomy": 4,
+        "molecular_function": 5,
+        "drug": 6,
+        "cellular_component": 7,
+        "pathway": 8,
+        "exposure": 9
+    },
+    "relation_type": {
+        "expression present": 0,
+        "ddi": 1,
+        "interacts with": 2,
+        "ppi": 3,
+        "phenotype present": 4,
+        "parent-child": 5,
+        "associated with": 6,
+        "side effect": 7,
+        "contraindication": 8,
+        "expression absent": 9,
+        "target": 10,
+        "indication": 11,
+        "enzyme": 12,
+        "transporter": 13,
+        "off-label use": 14,
+        "linked to": 15,
+        "phenotype absent": 16,
+        "carrier": 17
+    },
+    3: {(1, 1)}
+    17: {(1, 6)}
+    12: {(1, 6)}
+    10: {(1, 6)}
+    13: {(1, 6)}
+    8: {(2, 6)}
+    11: {(2, 6)}
+    14: {(2, 6)}
+    1: {(6, 6)}
+    6: {(1, 2), (1, 3)}
+    5: {(4, 4), (8, 8), (5, 5), (7, 7), (0, 0), (9, 9), (3, 3), (2, 2)}
+    16: {(2, 3)}
+    4: {(2, 3)}
+    7: {(3, 6)}
+    2: {(0, 1), (1, 5), (1, 8), (0, 9), (7, 9), (1, 7), (5, 9), (1, 9)}
+    15: {(2, 9)}
+    0: {(1, 4)}
+    9: {(1, 4)}
+    gene/protein-ppi-gene/protein,
+    gene/protein-carrier-drug,
+    gene/protein-enzyme-drug,
+    gene/protein-target-drug,
+    gene/protein-transporter-drug,
+    disease-contraindication-drug,
+    disease-indication-drug,
+    disease-off-label use-drug,
+    drug-synergistic interaction-drug,
+    gene/protein-associated with-disease,
+    gene/protein-associated with-effect/phenotype,
+    anatomy-parent-child-anatomy,
+    pathway-parent-child-pathway,
+    molecular_function-parent-child-molecular_function,
+    cellular_component-parent-child-cellular_component,
+    biological_process-parent-child-biological_process,
+    exposure-parent-child-exposure,
+    effect/phenotype-parent-child-effect/phenotype,
+    disease-parent-child-disease,
+    disease-phenotype absent-effect/phenotype,
+    disease-phenotype present-effect/phenotype,
+    effect/phenotype-side effect-drug,
+    biological_process-interacts with-gene/protein,
+    gene/protein-interacts with-molecular_function,
+    gene/protein-interacts with-pathway,
+    biological_process-interacts with-exposure,
+    cellular_component-interacts with-exposure,
+    gene/protein-interacts with-cellular_component,
+    molecular_function-interacts with-exposure,
+    gene/protein-interacts with-exposure,
+    disease-linked to-exposure,
+    gene/protein-expression present-anatomy,
+    gene/protein-expression absent-anatomy
+}
