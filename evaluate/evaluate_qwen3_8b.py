@@ -95,8 +95,9 @@ def parse_model_response(raw):
         text = raw or ""
         think_match = re.search(r"<think>(.*?)</think>", text, flags=re.DOTALL | re.IGNORECASE)
         reasoning = think_match.group(1).strip() if think_match else text.strip()
+        answer_match = re.search(r"<answer>(.*?)</answer>", text, flags=re.DOTALL | re.IGNORECASE)
         after_think = re.sub(r"<think>.*?</think>", "", text, flags=re.DOTALL | re.IGNORECASE).strip()
-        answer = after_think or ""
+        answer = answer_match.group(1).strip() if answer_match else after_think
         if not answer:
             lines = [line.strip() for line in text.splitlines() if line.strip()]
             answer = lines[-1] if lines else ""

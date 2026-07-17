@@ -11,6 +11,26 @@ from transformers import AutoModelForCausalLM, AutoTokenizer
 from evaluate_qwen3_8b import build_model_messages, parse_model_response, stable_row_id
 
 
+BIOKCOT_SYSTEM_PROMPT = """Respond in the following format:
+<think>
+...
+</think>
+<answer>
+...
+</answer>
+"""
+
+
+def build_biokcot_messages(row):
+    return [
+        {"role": "system", "content": BIOKCOT_SYSTEM_PROMPT},
+        {
+            "role": "user",
+            "content": f"{row.get('question', '')}\nAnswer the question and think step by step.",
+        },
+    ]
+
+
 def build_prompt(tokenizer, messages, enable_thinking=None):
     kwargs = {
         "tokenize": False,
@@ -47,14 +67,19 @@ def load_model(args):
         device_map=args.device_map,
         trust_remote_code=args.trust_remote_code,
     )
-    model = PeftModel.from_pretrained(model, args.adapter)
+    if args.adapter:
+        model = PeftModel.from_pretrained(model, args.adapter)
     model.eval()
     return tokenizer, model
 
 
 def generate_batch(tokenizer, model, rows, args):
     prompts = [
-        build_prompt(tokenizer, build_model_messages(row), enable_thinking=args.enable_thinking)
+        build_prompt(
+            tokenizer,
+            build_biokcot_messages(row) if args.prompt_style == "biokcot" else build_model_messages(row),
+            enable_thinking=args.enable_thinking,
+        )
         for row in rows
     ]
     inputs = tokenizer(
@@ -65,32 +90,35 @@ def generate_batch(tokenizer, model, rows, args):
         max_length=args.cutoff_len,
     )
     inputs = {key: value.to(model.device) for key, value in inputs.items()}
-    prompt_lengths = inputs["attention_mask"].sum(dim=1).tolist()
+    input_width = inputs["input_ids"].shape[1]
 
+    generation_kwargs = {
+        "max_new_tokens": args.max_new_tokens,
+        "do_sample": args.temperature > 0,
+        "top_p": args.top_p,
+        "top_k": args.top_k,
+        "repetition_penalty": args.repetition_penalty,
+        "pad_token_id": tokenizer.pad_token_id,
+        "eos_token_id": tokenizer.eos_token_id,
+    }
+    if args.temperature > 0:
+        generation_kwargs["temperature"] = args.temperature
     with torch.inference_mode():
         outputs = model.generate(
             **inputs,
-            max_new_tokens=args.max_new_tokens,
-            do_sample=args.temperature > 0,
-            temperature=args.temperature if args.temperature > 0 else None,
-            top_p=args.top_p,
-            top_k=args.top_k,
-            repetition_penalty=args.repetition_penalty,
-            pad_token_id=tokenizer.pad_token_id,
-            eos_token_id=tokenizer.eos_token_id,
+            **generation_kwargs,
         )
 
-    texts = []
-    for output_ids, prompt_len in zip(outputs, prompt_lengths):
-        generated_ids = output_ids[int(prompt_len) :]
-        texts.append(tokenizer.decode(generated_ids, skip_special_tokens=True).strip())
-    return texts
+    return [
+        tokenizer.decode(output_ids[input_width:], skip_special_tokens=True).strip()
+        for output_ids in outputs
+    ]
 
 
 def main():
     parser = argparse.ArgumentParser(description="Run local HF base model + LoRA adapter predictions for BioKCoT test CSV.")
     parser.add_argument("--base-model", required=True, help="Base model ID or local path, e.g. Qwen/Qwen3-8B")
-    parser.add_argument("--adapter", required=True, help="LoRA adapter path or model ID")
+    parser.add_argument("--adapter", default="", help="Optional LoRA adapter path or model ID")
     parser.add_argument("--input", required=True, help="Input test CSV.")
     parser.add_argument("--predictions", required=True, help="Output predictions CSV.")
     parser.add_argument("--model-name", default="qwen3-8b-bionokg-lora", help="Name stored in prediction CSV.")
@@ -104,6 +132,12 @@ def main():
     parser.add_argument("--repetition-penalty", type=float, default=1.0)
     parser.add_argument("--dtype", choices=["auto", "bf16", "fp16", "fp32"], default="bf16")
     parser.add_argument("--device-map", default="auto")
+    parser.add_argument(
+        "--prompt-style",
+        choices=["biokcot", "evaluation"],
+        default="evaluation",
+        help="Use the checkpoint training prompt or the generic evaluation prompt.",
+    )
     parser.add_argument("--trust-remote-code", action="store_true", default=True)
     parser.add_argument("--disable-thinking", action="store_true", help="Pass enable_thinking=False to Qwen3 chat template when supported.")
     parser.add_argument("--resume", action="store_true")
