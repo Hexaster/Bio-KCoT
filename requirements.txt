@@ -1,0 +1,19 @@
+# Bio-KCoT checkpoint replay and evaluation environment.
+# Core framework versions are taken from the saved model metadata.
+
+torch==2.5.1
+transformers==4.52.4
+tokenizers==0.21.1
+peft==0.17.0
+
+# Model loading and safetensors checkpoints.
+accelerate>=1.2.0,<2.0.0
+safetensors>=0.4.5,<1.0.0
+
+# Replay datasets, result tables, and progress reporting.
+numpy>=1.26.0,<3.0.0
+pandas>=2.2.0,<3.0.0
+tqdm>=4.66.0,<5.0.0
+
+# Optional judge API client; the evaluator also has a urllib fallback.
+openai>=1.30.0,<2.0.0
