@@ -7,6 +7,18 @@ The replay path uses the available Qwen3-8B artifacts and does not retrain a mod
 - KG/process-RL adapter: `model/GRPO/qwen3-8b-kg/checkpoint-100`
 - complete test set: the four CSV files under `dataset/data/test` (1,121 rows)
 
+All replay paths are configured under `paths` in `config.json`:
+
+```json
+"replay_sft_merged": "model/kg_clean/qwen3-8b/merge",
+"replay_outcome_checkpoint": "model/GRPO/qwen3-8b/checkpoint-110",
+"replay_process_checkpoint": "model/GRPO/qwen3-8b-kg/checkpoint-100",
+"replay_test_dir": "dataset/data/test",
+"replay_output_dir": "evaluate/replay_results"
+```
+
+Relative paths are resolved from the repository root. Absolute paths may be used for artifacts stored elsewhere. The same values can be overridden without editing `config.json` by setting `REPLAY_SFT_MERGED`, `REPLAY_OUTCOME_CHECKPOINT`, `REPLAY_PROCESS_CHECKPOINT`, `REPLAY_TEST_DIR`, and `REPLAY_OUTPUT_DIR` in `.env`.
+
 ## 1. Copy the repository to the GPU server
 
 The three replay variants need about 17 GB of model files. Optimizer states and older checkpoints are not required for inference.

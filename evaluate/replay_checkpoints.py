@@ -4,7 +4,7 @@ import subprocess
 import sys
 from pathlib import Path
 
-from audit_checkpoints import TEST_FILES, audit
+from audit_checkpoints import PROJECT_ROOT, TEST_FILES, audit, replay_paths
 
 
 TASK_TYPES = {
@@ -43,7 +43,6 @@ def run(command):
 
 def main():
     parser = argparse.ArgumentParser(description="Replay the available Qwen3-8B Bio-KCoT artifacts.")
-    parser.add_argument("--project-root", type=Path, default=Path(__file__).resolve().parents[1])
     parser.add_argument("--output-dir", type=Path, default=None)
     parser.add_argument(
         "--variants",
@@ -60,23 +59,23 @@ def main():
     parser.add_argument("--judge-model", default="")
     args = parser.parse_args()
 
-    root = args.project_root.resolve()
-    output_dir = (args.output_dir or root / "evaluate/replay_results").resolve()
-    audit(root)
+    paths = replay_paths()
+    output_dir = (args.output_dir or paths["output_dir"]).resolve()
+    audit(paths)
 
     combined_test = output_dir / "biomolkgqa_test_1121.csv"
-    row_count = build_combined_test(root / "dataset/data/test", combined_test)
+    row_count = build_combined_test(paths["test_dir"], combined_test)
     print(f"Combined replay test set: {combined_test} ({row_count} rows)")
 
-    merged = root / "model/kg_clean/qwen3-8b/merge"
+    merged = paths["merged"]
     variants = {
-        "sft": ("", "model/kg_clean/qwen3-8b/merge"),
-        "outcome": (root / "model/GRPO/qwen3-8b/checkpoint-110", "model/GRPO/qwen3-8b/checkpoint-110"),
-        "process": (root / "model/GRPO/qwen3-8b-kg/checkpoint-100", "model/GRPO/qwen3-8b-kg/checkpoint-100"),
+        "sft": ("", str(merged)),
+        "outcome": (paths["outcome"], str(paths["outcome"])),
+        "process": (paths["process"], str(paths["process"])),
     }
 
-    predictor = root / "evaluate/local_hf_lora_predict.py"
-    evaluator = root / "evaluate/evaluate_qwen3_8b.py"
+    predictor = PROJECT_ROOT / "evaluate/local_hf_lora_predict.py"
+    evaluator = PROJECT_ROOT / "evaluate/evaluate_qwen3_8b.py"
     for name in args.variants:
         adapter, model_name = variants[name]
         predictions = output_dir / f"qwen3-8b-{name}-predictions.csv"

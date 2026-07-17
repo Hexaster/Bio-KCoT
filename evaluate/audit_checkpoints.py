@@ -2,7 +2,12 @@ import argparse
 import csv
 import json
 import struct
+import sys
 from pathlib import Path
+
+PROJECT_ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(PROJECT_ROOT))
+from biokcot_config import path as config_path
 
 
 TEST_FILES = (
@@ -38,11 +43,29 @@ def require_files(directory, names):
         raise FileNotFoundError(f"{directory}: missing {', '.join(missing)}")
 
 
-def audit(project_root):
-    merged = project_root / "model/kg_clean/qwen3-8b/merge"
-    outcome = project_root / "model/GRPO/qwen3-8b/checkpoint-110"
-    process = project_root / "model/GRPO/qwen3-8b-kg/checkpoint-100"
-    test_dir = project_root / "dataset/data/test"
+def replay_paths():
+    return {
+        "merged": config_path("paths.replay_sft_merged", env="REPLAY_SFT_MERGED"),
+        "outcome": config_path("paths.replay_outcome_checkpoint", env="REPLAY_OUTCOME_CHECKPOINT"),
+        "process": config_path("paths.replay_process_checkpoint", env="REPLAY_PROCESS_CHECKPOINT"),
+        "test_dir": config_path("paths.replay_test_dir", env="REPLAY_TEST_DIR"),
+        "output_dir": config_path("paths.replay_output_dir", env="REPLAY_OUTPUT_DIR"),
+    }
+
+
+def display_path(path):
+    try:
+        return path.relative_to(PROJECT_ROOT)
+    except ValueError:
+        return path
+
+
+def audit(paths=None):
+    paths = paths or replay_paths()
+    merged = paths["merged"]
+    outcome = paths["outcome"]
+    process = paths["process"]
+    test_dir = paths["test_dir"]
 
     require_files(
         merged,
@@ -60,7 +83,7 @@ def audit(project_root):
         count = validate_safetensors(checkpoint / "adapter_model.safetensors")
         if adapter.get("r") != 32:
             raise ValueError(f"{checkpoint}: expected LoRA rank 32, found {adapter.get('r')}")
-        print(f"OK {label} adapter: {checkpoint.relative_to(project_root)} ({count} tensors, rank 32)")
+        print(f"OK {label} adapter: {display_path(checkpoint)} ({count} tensors, rank 32)")
 
     total = 0
     for name in TEST_FILES:
@@ -77,9 +100,8 @@ def audit(project_root):
 
 def main():
     parser = argparse.ArgumentParser(description="Validate Bio-KCoT replay artifacts without loading a model.")
-    parser.add_argument("--project-root", type=Path, default=Path(__file__).resolve().parents[1])
-    args = parser.parse_args()
-    audit(args.project_root.resolve())
+    parser.parse_args()
+    audit()
 
 
 if __name__ == "__main__":
