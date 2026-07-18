@@ -1,8 +1,8 @@
 {
   "api": {
-    "judge_base_url": "https://api.ai-gaochao.cn/v1",
+    "judge_base_url": "",
     "judge_model": "deepseek-r1",
-    "local_base_url": "http://127.0.0.1:8333/v1"
+    "local_base_url": ""
   },
   "neo4j": {
     "uri": "bolt://localhost:7688",
