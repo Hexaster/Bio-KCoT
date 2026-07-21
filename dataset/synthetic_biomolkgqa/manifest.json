@@ -1,0 +1,20 @@
+{
+  "name": "BioMolKGQA-Synthetic",
+  "seed": 42,
+  "synthetic": true,
+  "intended_use": "Software and training-pipeline smoke tests only",
+  "not_for": "Scientific benchmarking, medical decisions, or comparison with paper results",
+  "counts": {
+    "train_per_task": 12,
+    "test_per_task": 4,
+    "sft": 28,
+    "rl": 20,
+    "combined_test": 16
+  },
+  "tasks": [
+    "disease-indication",
+    "drug-synergy",
+    "PPI_reasoning",
+    "reactome_reasoning"
+  ]
+}
